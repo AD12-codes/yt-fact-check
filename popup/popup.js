@@ -3,33 +3,38 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   if (tab.url.includes('youtube.com/watch')) {
     document.getElementById('loading').classList.remove('hidden');
-    // Get video info from content script
-    chrome.tabs.sendMessage(tab.id, { action: 'getVideoInfo' }, async (videoInfo) => {
-      alert(JSON.stringify(videoInfo));
-      // Add error checking for videoInfo
-      if (!videoInfo) {
-        console.error('No video info received from content script');
-        return;
+    
+    try {
+      // Use Promise-based messaging
+      const videoInfo = await new Promise((resolve, reject) => {
+        chrome.tabs.sendMessage(tab.id, { action: 'getVideoInfo' }, response => {
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError);
+          } else if (!response || !response.transcript) {
+            reject(new Error('Invalid video info received'));
+          } else {
+            resolve(response);
+          }
+        });
+      });
+
+      console.log('Video Info received:', videoInfo);
+      
+      const analysis = await chrome.runtime.sendMessage({
+        action: 'analyzeVideo',
+        videoInfo: videoInfo
+      });
+      
+      if (!analysis) {
+        throw new Error('No analysis received from background script');
       }
       
-      console.log('Video Info 1:', videoInfo);
-      try {
-        const analysis = await chrome.runtime.sendMessage({
-          action: 'analyzeVideo',
-          videoInfo: videoInfo
-        });
-        console.log('Analysis:', analysis);
-        
-        if (!analysis) {
-          console.error('No analysis received from background script');
-          return;
-        }
-        
-        updatePopup(analysis);
-      } catch (error) {
-        console.error('Error getting analysis:', error);
-      }
-    });
+      updatePopup(analysis);
+    } catch (error) {
+      console.error('Error:', error);
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('results').innerHTML = `Error: ${error.message}`;
+    }
   } else {
     document.getElementById('results').innerHTML = 'Please open a YouTube video to analyze.';
   }
@@ -43,7 +48,6 @@ function updatePopup(analysis) {
   
   const factChecksContainer = document.getElementById('factChecks');
   factChecksContainer.innerHTML = '';
-  alert(JSON.stringify(analysis));
   if (analysis.factChecks) {
   analysis.factChecks.forEach(fact => {
     const factElement = document.createElement('div');

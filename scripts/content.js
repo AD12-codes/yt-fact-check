@@ -26,17 +26,33 @@ class YouTubeAnalyzer {
   async openTranscript() {
     const transcriptButton = document.querySelector('button[aria-label="Show transcript"]');
     transcriptButton.click();
-    await this.sleep(2000);
+    // await this.sleep(2000);
     console.log('Transcript button clicked');
   }
 
   async getTranscript() {
     try {
       await this.openTranscript();
-      // If transcript panel is already open, just get the content
+      
+      // Wait for transcript container and its content to load
       const transcriptContainer = await this.waitForElement('ytd-transcript-segment-list-renderer');
       console.log('Transcript container:', transcriptContainer);
-      return this.extractTranscriptText(transcriptContainer);
+      
+      // Wait for at least one transcript segment to appear
+      const hasSegments = await this.waitForElement('ytd-transcript-segment-renderer');
+      if (!hasSegments) {
+        throw new Error('Transcript segments did not load');
+      }
+      
+      // Additional wait to ensure all segments are loaded
+      await this.sleep(1000);
+      
+      const transcriptText = this.extractTranscriptText(transcriptContainer);
+      if (!transcriptText) {
+        throw new Error('Failed to extract transcript text');
+      }
+      
+      return transcriptText;
     } catch (error) {
       console.error('Error getting transcript:', error);
       return 'Failed to load transcript. Please try opening it manually.';
@@ -55,13 +71,18 @@ class YouTubeAnalyzer {
       .join('\n');
   }
 
-  // Helper function to wait for an element to appear
-  async waitForElement(selector, timeout = 5000) {
+  // Modify waitForElement to be more robust
+  async waitForElement(selector, timeout = 2000) {
     const startTime = Date.now();
     
     while (Date.now() - startTime < timeout) {
       const element = document.querySelector(selector);
-      if (element) return element;
+      if (element) {
+        // Additional check to ensure element is visible
+        if (element.offsetParent !== null) {
+          return element;
+        }
+      }
       await this.sleep(100);
     }
     
@@ -75,12 +96,22 @@ class YouTubeAnalyzer {
 }
 
 // Listen for messages from popup
-chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'getVideoInfo') {
+    // Create a new analyzer instance
     const analyzer = new YouTubeAnalyzer();
-    const videoInfo =  await analyzer.getVideoInfo();
-    console.log('Video Info:', videoInfo);
-    sendResponse(videoInfo);
-    return true; // Required for async response
+    
+    // Handle the async operation properly
+    analyzer.getVideoInfo()
+      .then(videoInfo => {
+        console.log('Sending Video Info:', videoInfo);
+        sendResponse(videoInfo);
+      })
+      .catch(error => {
+        console.error('Error in getVideoInfo:', error);
+        sendResponse({ error: error.message });
+      });
+    
+    return true; // This is crucial - keeps the message port open
   }
 }); 
