@@ -1,0 +1,9 @@
+youtube-fact-checker/
+├── manifest.json
+├── popup/
+│   ├── popup.html
+│   ├── popup.css
+│   └── popup.js
+└── scripts/
+    ├── content.js
+    └── background.js 
