@@ -1,137 +1,244 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>YT Fact Check</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <style>
-    body {
-      min-width: 400px;
-      max-width: 400px;
-      background-color: #121212;
-      color: #ffffff;
-      max-height: 600px;
-      overflow-y: auto;
-    }
+  <head>
+    <title>YT Fact Check</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        min-width: 400px;
+        max-width: 400px;
+        background-color: #121212;
+        color: #ffffff;
+        max-height: 600px;
+        overflow-y: auto;
+      }
 
-    /* Custom Scrollbar Styles */
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
+      /* Custom Scrollbar Styles */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
 
-    ::-webkit-scrollbar-track {
-      background: #1E1E1E;
-      border-radius: 4px;
-    }
+      ::-webkit-scrollbar-track {
+        background: #1e1e1e;
+        border-radius: 4px;
+      }
 
-    ::-webkit-scrollbar-thumb {
-      background: #424242;
-      border-radius: 4px;
-    }
+      ::-webkit-scrollbar-thumb {
+        background: #424242;
+        border-radius: 4px;
+      }
 
-    ::-webkit-scrollbar-thumb:hover {
-      background: #616161;
-    }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #616161;
+      }
 
-    .fact-item {
-      background-color: #1E1E1E;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 16px;
-    }
-    .trust-score-container {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin: 20px 0;
-    }
-    .trust-score-label {
-      font-size: 24px;
-      color: #90CAF9;
-    }
-    .trust-score {
-      font-size: 36px;
-      font-weight: bold;
-    }
-    .score-red {
-      color: #EF5350;
-    }
-    .score-yellow {
-      color: #FFB74D;
-    }
-    .score-green {
-      color: #66BB6A;
-    }
-    .status-verified {
-      background-color: #1B5E20;
-      color: #ffffff;
-      padding: 6px 16px;
-      border-radius: 16px;
-      display: inline-block;
-      font-weight: 500;
-    }
-    .status-unverified {
-      background-color: #B71C1C;
-      color: #ffffff;
-      padding: 6px 16px;
-      border-radius: 16px;
-      display: inline-block;
-      font-weight: 500;
-    }
-    .section-title {
-      color: #90CAF9;
-      font-size: 24px;
-      font-weight: 500;
-      margin: 20px 0;
-    }
-    .label {
-      color: #90CAF9;
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
-    .content {
-      color: #E0E0E0;
-      margin-bottom: 12px;
-      line-height: 1.5;
-    }
-    .claim-container {
-      margin-bottom: 16px;
-    }
-    .status-container {
-      margin: 12px 0;
-    }
-    .sources-container {
-      margin-top: 12px;
-    }
-    #loading {
-      background-color: #1E1E1E;
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
-    }
-    .container {
-      padding: 24px;
-    }
-  </style>
-  <script src="popup.js"></script>
-</head>
-<body>
-  <div class="container">
-    <h1 class="section-title">YT Fact Check</h1>
-    
-    <div id="loading" class="hidden">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-    </div>
+      .fact-item {
+        background-color: #1e1e1e;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      .trust-score-container {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin: 20px 0;
+      }
+      .trust-score-label {
+        font-size: 24px;
+        color: #90caf9;
+      }
+      .trust-score {
+        font-size: 36px;
+        font-weight: bold;
+      }
+      .score-red {
+        color: #ef5350;
+      }
+      .score-yellow {
+        color: #ffb74d;
+      }
+      .score-green {
+        color: #66bb6a;
+      }
+      .status-verified {
+        background-color: #1b5e20;
+        color: #ffffff;
+        padding: 6px 16px;
+        border-radius: 16px;
+        display: inline-block;
+        font-weight: 500;
+      }
+      .status-unverified {
+        background-color: #b71c1c;
+        color: #ffffff;
+        padding: 6px 16px;
+        border-radius: 16px;
+        display: inline-block;
+        font-weight: 500;
+      }
+      .section-title {
+        color: #90caf9;
+        font-size: 24px;
+        font-weight: 500;
+        margin: 20px 0;
+      }
+      .label {
+        color: #90caf9;
+        font-weight: 500;
+        margin-bottom: 8px;
+      }
+      .content {
+        color: #e0e0e0;
+        margin-bottom: 12px;
+        line-height: 1.5;
+      }
+      .claim-container {
+        margin-bottom: 16px;
+      }
+      .status-container {
+        margin: 12px 0;
+      }
+      .sources-container {
+        margin-top: 12px;
+      }
+      #loading {
+        background-color: #1e1e1e;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+      }
+      .container {
+        padding: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="p-6">
+      <!-- Pre-login content -->
+      <div
+        id="preLoginContent"
+        class="flex flex-col items-center justify-center min-h-[300px] space-y-6"
+      >
+        <!-- App Logo/Icon -->
+        <div class="mb-2">
+          <svg
+            class="w-12 h-12 mx-auto text-red-500"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"
+            />
+          </svg>
+        </div>
 
-    <div id="results">
-      <div class="trust-score-container">
-        <div class="trust-score-label">Trust Score:</div>
-        <div id="trustScore" class="trust-score"></div>
+        <!-- App Title and Description -->
+        <div class="space-y-3 mb-8 text-center">
+          <h1 class="text-2xl font-bold text-white">YT Fact Check</h1>
+          <p class="text-gray-400 text-sm px-4">
+            Your AI-powered fact-checking companion for YouTube videos. Get
+            instant trust scores and verified claims analysis.
+          </p>
+        </div>
+
+        <!-- Sign In Button -->
+        <div id="signInButton" class="flex justify-center">
+          <button
+            class="flex items-center space-x-2 bg-white text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 transform hover:scale-105"
+          >
+            <img
+              src="https://www.google.com/favicon.ico"
+              alt="Google"
+              class="w-4 h-4"
+            />
+            <span class="text-sm font-medium">Sign in with Google</span>
+          </button>
+        </div>
       </div>
 
-      <div class="section-title">Fact Checks</div>
-      <div id="factChecks"></div>
+      <!-- Post-login header -->
+      <div id="postLoginHeader" class="hidden">
+        <div class="flex items-center justify-between mb-4">
+          <!-- Left: Title -->
+          <div class="flex-1">
+            <h1 class="text-md font-bold">YT Fact Check</h1>
+          </div>
+
+          <!-- Center: Logo -->
+          <div class="flex justify-center flex-1">
+            <svg
+              class="w-8 h-8 text-red-500"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"
+              />
+            </svg>
+          </div>
+
+          <!-- Right: User Profile and Sign Out -->
+          <div class="flex-1 flex items-center justify-end space-x-2">
+            <img
+              id="userAvatar"
+              class="w-8 h-8 rounded-full"
+              src=""
+              alt="Profile"
+            />
+            <button
+              id="signOutButton"
+              class="p-2 rounded-full hover:bg-gray-700 text-gray-400 hover:text-white"
+              title="Sign out"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content Section -->
+      <div id="contentSection" class="hidden w-full">
+        <div class="container flex justify-center items-center min-h-[200px]">
+          <!-- Loading Spinner -->
+          <div id="loading" class="hidden">
+            <div
+              class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"
+            ></div>
+          </div>
+
+          <!-- Results (initially hidden) -->
+          <div id="results" class="hidden w-full">
+            <div class="trust-score-container">
+              <div class="trust-score-label">Trust Score:</div>
+              <div id="trustScore" class="trust-score"></div>
+            </div>
+
+            <div class="fact-checks-container">
+              <div class="fact-checks-label">Fact Checks</div>
+              <div id="factChecks" class="fact-checks"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-</body>
-</html> 
+    <script src="../scripts/auth.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

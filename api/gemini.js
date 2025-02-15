@@ -1,60 +1,195 @@
-// class GeminiAPI {
-//   constructor(apiKey) {
-//     this.apiKey = apiKey;
-//     this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
-//   }
+class GeminiAPI {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.baseUrl =
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+  }
 
-//   async analyzeContent(videoInfo) {
-//     const prompt = `
-//       Analyze the following YouTube video content for factual accuracy:
-//       Title: ${videoInfo.title}
-//       Description: ${videoInfo.description}
-//       Transcript: ${videoInfo.transcript}
+  async analyzeContent(videoInfo) {
+    const prompt = `
+      Analyze the following YouTube video content for factual accuracy:
+      Title: ${videoInfo.title}
+      Description: ${videoInfo.description}
+      Transcript: ${videoInfo.transcript}
       
-//       Please provide:
-//       1. A trust score from 0-100
-//       2. List of key claims and their verification status
-//       3. Sources that contradict or support the claims
-//     `;
+      Please provide your analysis in the following format:
 
-//     try {
-//       const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({
-//           contents: [{
-//             parts: [{
-//               text: prompt
-//             }]
-//           }]
-//         })
-//       });
+      Trust Score: [0-100] based on claims and status and sources
 
-//       const data = await response.json();
-//       console.log('Raw Gemini API response:', data); // For debugging
-//       return this.parseGeminiResponse(data);
-//     } catch (error) {
-//       console.error('Error analyzing content:', error);
-//       throw error;
-//     }
-//   }
+      Claims Analysis:
+      Claim: [state the claim]
+      Status: [Verified/Unverified]
+      Source: [provide URL or reference]
 
-//   parseGeminiResponse(response) {
-//     // Parse and structure the Gemini response
-//     // This is a simplified version - you'll need to adapt based on actual response format
-//     return {
-//       trustScore: 85, // Example score
-//       factChecks: [
-//         {
-//           claim: "Example claim",
-//           verified: true,
-//           sources: ["source1", "source2"]
-//         }
-//       ]
-//     };
-//   }
-// }
+      [Repeat for each major claim made in the video]
 
-// export default GeminiAPI; 
+      Please be specific with sources and include URLs when possible.
+      Please provide:
+
+A clear percentage rating (0-100%) 
+A detailed breakdown of the claims made in the statement
+For each claim identified:
+
+Supporting evidence from reputable sources
+Any contradicting evidence
+The specific dates and context where this information was verified
+
+
+Links to fact-checking organizations that have investigated similar claims
+Any important context or nuance that affects the accuracy rating
+
+Please be thorough and cite specific sources. If any part of the stateme
+    `;
+
+    try {
+      const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt,
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Raw Gemini API response:", data); // For debugging
+      return this.parseGeminiResponse(data);
+    } catch (error) {
+      console.error("Error calling Gemini API:", error);
+      throw error;
+    }
+  }
+
+  parseGeminiResponse(response) {
+    try {
+      if (
+        !response ||
+        !response.candidates ||
+        !response.candidates[0] ||
+        !response.candidates[0].content
+      ) {
+        console.error("Unexpected Gemini API response structure:", response);
+        throw new Error("Invalid response structure");
+      }
+
+      const text = response.candidates[0].content.parts[0].text;
+      console.log("Gemini Response:", text);
+
+      // Extract trust score
+      const trustScoreMatch = text.match(/Trust Score:\s*(\d+)/i);
+      const trustScore = trustScoreMatch ? parseInt(trustScoreMatch[1]) : 0;
+
+      // Extract true/false percentage
+      const percentageMatch = text.match(
+        /True\/False Percentage Rating:\s*(\d+)%/i
+      );
+      const percentage = percentageMatch ? parseInt(percentageMatch[1]) : 0;
+
+      // Extract claims analysis
+      const factChecks = [];
+      const claimSections = text.split(/\*\*Claim \d+:/);
+
+      // Skip the first split as it's the intro text
+      for (let i = 1; i < claimSections.length; i++) {
+        const section = claimSections[i];
+
+        // Extract claim text
+        const claim = section.split("\n")[0].trim();
+
+        // Extract status
+        const statusMatch = section.match(/\*\*Status:\*\*\s*([^\n]+)/);
+        const status = statusMatch ? statusMatch[1].trim() : "Unverified";
+
+        // Extract source
+        const sourceMatch = section.match(
+          /\*\*Source:\*\*\s*([^\n]+(?:\n(?!\*\*)[^\n]+)*)/
+        );
+        const source = sourceMatch ? sourceMatch[1].trim() : "";
+
+        // Extract supporting evidence
+        const supportingMatch = section.match(
+          /\*\*Supporting Evidence:\*\*\s*([^\n]+(?:\n(?!\*\*)[^\n]+)*)/
+        );
+        const supporting = supportingMatch ? supportingMatch[1].trim() : "";
+
+        // Extract contradicting evidence
+        const contradictingMatch = section.match(
+          /\*\*Contradicting Evidence:\*\*\s*([^\n]+(?:\n(?!\*\*)[^\n]+)*)/
+        );
+        const contradicting = contradictingMatch
+          ? contradictingMatch[1].trim()
+          : "";
+
+        // Determine if verified based on status text
+        const isVerified =
+          status.toLowerCase().includes("verified") &&
+          !status.toLowerCase().includes("unverified");
+
+        factChecks.push({
+          claim: claim,
+          verified: isVerified,
+          status: status,
+          sources: [source],
+          supportingEvidence: supporting,
+          contradictingEvidence: contradicting,
+        });
+      }
+
+      return {
+        trustScore: trustScore,
+        percentage: percentage,
+        factChecks:
+          factChecks.length > 0
+            ? factChecks
+            : [
+                {
+                  claim: "No claims could be extracted from the video",
+                  verified: false,
+                  status: "Error",
+                  sources: ["Analysis did not yield any verifiable claims"],
+                  supportingEvidence: "",
+                  contradictingEvidence: "",
+                },
+              ],
+      };
+    } catch (error) {
+      console.error("Error parsing Gemini response:", error);
+      console.log("Raw response:", response);
+      return {
+        trustScore: 0,
+        percentage: 0,
+        factChecks: [
+          {
+            claim: "Error analyzing video content",
+            verified: false,
+            status: "Error",
+            sources: [`Failed to parse Gemini response: ${error.message}`],
+            supportingEvidence: "",
+            contradictingEvidence: "",
+          },
+        ],
+      };
+    }
+  }
+}
+
+export { GeminiAPI };
