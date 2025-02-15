@@ -9,7 +9,30 @@
       max-width: 400px;
       background-color: #121212;
       color: #ffffff;
+      max-height: 600px;
+      overflow-y: auto;
     }
+
+    /* Custom Scrollbar Styles */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1E1E1E;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #424242;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #616161;
+    }
+
     .fact-item {
       background-color: #1E1E1E;
       border-radius: 8px;
