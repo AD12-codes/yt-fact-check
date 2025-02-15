@@ -42,22 +42,47 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function updatePopup(analysis) {
   analysis = analysis.data;
-  // {"success":true,"data":{"trustScore":60,"factChecks":[{"claim":"No claims could be extracted from the video","verified":false,"sources":["Analysis did not yield any verifiable claims"]}]}}
   document.getElementById('loading').classList.add('hidden');
-  document.getElementById('trustScore').textContent = `${analysis.trustScore}%`;
+  
+  // Update trust score with color coding
+  const trustScore = analysis.trustScore;
+  const trustScoreElement = document.getElementById('trustScore');
+  trustScoreElement.textContent = `${trustScore}%`;
+  trustScoreElement.className = getTrustScoreClass(trustScore);
   
   const factChecksContainer = document.getElementById('factChecks');
   factChecksContainer.innerHTML = '';
+  
   if (analysis.factChecks) {
-  analysis.factChecks.forEach(fact => {
-    const factElement = document.createElement('div');
-    factElement.className = 'fact-item';
-    factElement.innerHTML = `
-      <strong>Claim:</strong> ${fact.claim}<br>
-      <strong>Status:</strong> ${fact.verified ? 'Verified' : 'Unverified'}<br>
-      <strong>Sources:</strong> ${fact.sources.join(', ')}
-    `;
-    factChecksContainer.appendChild(factElement);
-  });
+    analysis.factChecks.forEach(fact => {
+      const factElement = document.createElement('div');
+      factElement.className = 'fact-item';
+      factElement.innerHTML = `
+        <div class="claim-container">
+          <div class="label">Claim:</div>
+          <div class="content">${fact.claim}</div>
+        </div>
+        
+        <div class="status-container">
+          <div class="label">Status:</div>
+          <span class="${fact.verified ? 'status-verified' : 'status-unverified'}">
+            ${fact.verified ? 'Verified' : 'Unverified'}
+          </span>
+        </div>
+        
+        <div class="sources-container">
+          <div class="label">Sources:</div>
+          <div class="content">${Array.isArray(fact.sources) ? fact.sources.join(', ') : fact.sources}</div>
+        </div>
+      `;
+      factChecksContainer.appendChild(factElement);
+    });
+  }
 }
+
+function getTrustScoreClass(score) {
+  const baseClasses = 'trust-score';
+  if (score >= 86) return `${baseClasses} score-green`;
+  if (score >= 41) return `${baseClasses} score-yellow`;
+  return `${baseClasses} score-red`;
 } 

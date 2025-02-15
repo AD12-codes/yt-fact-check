@@ -72,7 +72,7 @@ class YouTubeAnalyzer {
   }
 
   // Modify waitForElement to be more robust
-  async waitForElement(selector, timeout = 2000) {
+  async waitForElement(selector, timeout = 5000) {
     const startTime = Date.now();
     
     while (Date.now() - startTime < timeout) {

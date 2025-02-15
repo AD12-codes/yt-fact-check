@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "YouTube Trust Score",
+  "name": "YT Fact Check",
   "version": "1.0",
   "description": "Analyzes YouTube videos for factual accuracy and provides a trust score",
   "permissions": [
