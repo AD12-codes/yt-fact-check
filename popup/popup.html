@@ -1,21 +1,137 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>YouTube Trust Score</title>
-  <link rel="stylesheet" href="popup.css">
+  <title>YT Fact Check</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      min-width: 400px;
+      max-width: 400px;
+      background-color: #121212;
+      color: #ffffff;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    /* Custom Scrollbar Styles */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1E1E1E;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #424242;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #616161;
+    }
+
+    .fact-item {
+      background-color: #1E1E1E;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .trust-score-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .trust-score-label {
+      font-size: 24px;
+      color: #90CAF9;
+    }
+    .trust-score {
+      font-size: 36px;
+      font-weight: bold;
+    }
+    .score-red {
+      color: #EF5350;
+    }
+    .score-yellow {
+      color: #FFB74D;
+    }
+    .score-green {
+      color: #66BB6A;
+    }
+    .status-verified {
+      background-color: #1B5E20;
+      color: #ffffff;
+      padding: 6px 16px;
+      border-radius: 16px;
+      display: inline-block;
+      font-weight: 500;
+    }
+    .status-unverified {
+      background-color: #B71C1C;
+      color: #ffffff;
+      padding: 6px 16px;
+      border-radius: 16px;
+      display: inline-block;
+      font-weight: 500;
+    }
+    .section-title {
+      color: #90CAF9;
+      font-size: 24px;
+      font-weight: 500;
+      margin: 20px 0;
+    }
+    .label {
+      color: #90CAF9;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .content {
+      color: #E0E0E0;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .claim-container {
+      margin-bottom: 16px;
+    }
+    .status-container {
+      margin: 12px 0;
+    }
+    .sources-container {
+      margin-top: 12px;
+    }
+    #loading {
+      background-color: #1E1E1E;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .container {
+      padding: 24px;
+    }
+  </style>
+  <script src="popup.js"></script>
 </head>
 <body>
   <div class="container">
-    <h2>Video Trust Score</h2>
-    <div id="loading" class="hidden">Analyzing video...</div>
+    <h1 class="section-title">YT Fact Check</h1>
+    
+    <div id="loading" class="hidden">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+    </div>
+
     <div id="results">
-      <div class="score-container">
-        <div class="score-label">Trust Score:</div>
-        <div id="trustScore" class="score">--</div>
+      <div class="trust-score-container">
+        <div class="trust-score-label">Trust Score:</div>
+        <div id="trustScore" class="trust-score"></div>
       </div>
-      <div id="factChecks" class="fact-checks"></div>
+
+      <div class="section-title">Fact Checks</div>
+      <div id="factChecks"></div>
     </div>
   </div>
-  <script src="popup.js"></script>
 </body>
 </html> 

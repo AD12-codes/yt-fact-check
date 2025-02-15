@@ -3,33 +3,38 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   if (tab.url.includes('youtube.com/watch')) {
     document.getElementById('loading').classList.remove('hidden');
-    // Get video info from content script
-    chrome.tabs.sendMessage(tab.id, { action: 'getVideoInfo' }, async (videoInfo) => {
-      alert(JSON.stringify(videoInfo));
-      // Add error checking for videoInfo
-      if (!videoInfo) {
-        console.error('No video info received from content script');
-        return;
+    
+    try {
+      // Use Promise-based messaging
+      const videoInfo = await new Promise((resolve, reject) => {
+        chrome.tabs.sendMessage(tab.id, { action: 'getVideoInfo' }, response => {
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError);
+          } else if (!response || !response.transcript) {
+            reject(new Error('Invalid video info received'));
+          } else {
+            resolve(response);
+          }
+        });
+      });
+
+      console.log('Video Info received:', videoInfo);
+      
+      const analysis = await chrome.runtime.sendMessage({
+        action: 'analyzeVideo',
+        videoInfo: videoInfo
+      });
+      
+      if (!analysis) {
+        throw new Error('No analysis received from background script');
       }
       
-      console.log('Video Info 1:', videoInfo);
-      try {
-        const analysis = await chrome.runtime.sendMessage({
-          action: 'analyzeVideo',
-          videoInfo: videoInfo
-        });
-        console.log('Analysis:', analysis);
-        
-        if (!analysis) {
-          console.error('No analysis received from background script');
-          return;
-        }
-        
-        updatePopup(analysis);
-      } catch (error) {
-        console.error('Error getting analysis:', error);
-      }
-    });
+      updatePopup(analysis);
+    } catch (error) {
+      console.error('Error:', error);
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('results').innerHTML = `Error: ${error.message}`;
+    }
   } else {
     document.getElementById('results').innerHTML = 'Please open a YouTube video to analyze.';
   }
@@ -37,23 +42,47 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function updatePopup(analysis) {
   analysis = analysis.data;
-  // {"success":true,"data":{"trustScore":60,"factChecks":[{"claim":"No claims could be extracted from the video","verified":false,"sources":["Analysis did not yield any verifiable claims"]}]}}
   document.getElementById('loading').classList.add('hidden');
-  document.getElementById('trustScore').textContent = `${analysis.trustScore}%`;
+  
+  // Update trust score with color coding
+  const trustScore = analysis.trustScore;
+  const trustScoreElement = document.getElementById('trustScore');
+  trustScoreElement.textContent = `${trustScore}%`;
+  trustScoreElement.className = getTrustScoreClass(trustScore);
   
   const factChecksContainer = document.getElementById('factChecks');
   factChecksContainer.innerHTML = '';
-  alert(JSON.stringify(analysis));
+  
   if (analysis.factChecks) {
-  analysis.factChecks.forEach(fact => {
-    const factElement = document.createElement('div');
-    factElement.className = 'fact-item';
-    factElement.innerHTML = `
-      <strong>Claim:</strong> ${fact.claim}<br>
-      <strong>Status:</strong> ${fact.verified ? 'Verified' : 'Unverified'}<br>
-      <strong>Sources:</strong> ${fact.sources.join(', ')}
-    `;
-    factChecksContainer.appendChild(factElement);
-  });
+    analysis.factChecks.forEach(fact => {
+      const factElement = document.createElement('div');
+      factElement.className = 'fact-item';
+      factElement.innerHTML = `
+        <div class="claim-container">
+          <div class="label">Claim:</div>
+          <div class="content">${fact.claim}</div>
+        </div>
+        
+        <div class="status-container">
+          <div class="label">Status:</div>
+          <span class="${fact.verified ? 'status-verified' : 'status-unverified'}">
+            ${fact.verified ? 'Verified' : 'Unverified'}
+          </span>
+        </div>
+        
+        <div class="sources-container">
+          <div class="label">Sources:</div>
+          <div class="content">${Array.isArray(fact.sources) ? fact.sources.join(', ') : fact.sources}</div>
+        </div>
+      `;
+      factChecksContainer.appendChild(factElement);
+    });
+  }
 }
+
+function getTrustScoreClass(score) {
+  const baseClasses = 'trust-score';
+  if (score >= 86) return `${baseClasses} score-green`;
+  if (score >= 41) return `${baseClasses} score-yellow`;
+  return `${baseClasses} score-red`;
 } 
