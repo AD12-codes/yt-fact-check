@@ -51,26 +51,64 @@ async function updateUIForAuthState(isSignedIn) {
 }
 
 async function initializeContent() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+  // Check if we're on YouTube
+  if (!tab.url?.includes("youtube.com")) {
+    showNotYouTubeMessage();
+    return;
+  }
+
+  // Check if we're on a video page
+  if (!tab.url?.includes("youtube.com/watch")) {
+    showNotVideoMessage();
+    return;
+  }
+
+  // We're on a YouTube video, proceed with analysis
+  await analyzeCurrentVideo(tab.id);
+}
+
+function showNotYouTubeMessage() {
+  hideAllContentSections();
+  document.getElementById("notYouTubeMessage").classList.remove("hidden");
+}
+
+function showNotVideoMessage() {
+  hideAllContentSections();
+  document.getElementById("notVideoMessage").classList.remove("hidden");
+}
+
+function hideAllContentSections() {
+  const sections = [
+    "loading",
+    "results",
+    "notYouTubeMessage",
+    "notVideoMessage",
+  ];
+  sections.forEach((id) => {
+    document.getElementById(id).classList.add("hidden");
+  });
+}
+
+async function analyzeCurrentVideo(tabId) {
   showLoading();
   try {
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
-    if (!tab.url.includes("youtube.com/watch")) {
-      throw new Error("Please open a YouTube video to analyze.");
-    }
-
-    const videoInfo = await getVideoInfo(tab.id);
+    const videoInfo = await getVideoInfo(tabId);
     const analysis = await analyzeVideo(videoInfo);
+    hideLoading();
     updatePopup(analysis);
   } catch (error) {
     console.error("Error:", error);
-    document.getElementById("results").innerHTML = `Error: ${error.message}`;
-  } finally {
     hideLoading();
+    document.getElementById("results").innerHTML = `Error: ${error.message}`;
   }
 }
+
+// Add click handler for Open YouTube button
+document.getElementById("openYouTubeButton").addEventListener("click", () => {
+  chrome.tabs.create({ url: "https://www.youtube.com" });
+});
 
 function showLoading() {
   document.getElementById("loading").classList.remove("hidden");

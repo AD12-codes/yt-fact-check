@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "YT Fact Check",
   "version": "1.0",
-  "description": "Analyzes YouTube videos for factual accuracy and provides a trust score",
-  "permissions": ["activeTab", "storage", "scripting", "tabs", "identity"],
+  "description": "AI-powered fact-checking for YouTube videos",
+  "permissions": ["identity", "storage", "activeTab", "scripting", "tabs"],
   "host_permissions": [
     "https://www.youtube.com/*",
     "https://accounts.google.com/*"
@@ -24,8 +24,9 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/*"],
-      "js": ["scripts/content.js"]
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["scripts/content.js"],
+      "run_at": "document_idle"
     }
   ]
 }

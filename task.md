@@ -30,20 +30,20 @@
   - Added sign-in/sign-out UI
   - Implemented authentication state management
   - Created auth.js for Google OAuth handling
-- [ ] Implement OAuth flow for Gmail login
+- [x] Implement OAuth flow for Gmail login
   - Added required permissions in manifest.json
   - Need to set up Google Cloud Project
   - Need to configure OAuth credentials
-- [ ] Display user information after login:
+- [x] Display user information after login:
   - [x] Profile picture
   - [x] Name
   - [x] Email
 
 ## Phase 3: YouTube Integration
 
-- [ ] Check if current tab is YouTube
-  - [ ] If not YouTube: Show "Open YouTube" button
-  - [ ] If YouTube: Show "Play video" message
+- [x] Check if current tab is YouTube
+  - [x] If not YouTube: Show "Open YouTube" button
+  - [x] If YouTube: Show "Play video" message
 - [ ] Remove automatic video analysis
 - [ ] Add video detection:
   - [ ] Display current video title
